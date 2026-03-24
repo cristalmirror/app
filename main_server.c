@@ -5,13 +5,13 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-
+#define BUFFER_SIZE 1024
 int main(int argc,char *argv[]) {
 
     int server_fd, new_socket, opt = 1;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
-
+    char buffer[1024] = {0};
     //Create descriptor of sockets
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket fallido");
@@ -33,14 +33,21 @@ int main(int argc,char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    printf("Esperando un conexion en el puerto 1234...\n");
+    printf("[SERVIDOR]: Esperando un conexion en el puerto 1234...\n");
 
     if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) {
         perror("Error en accept");
         exit(EXIT_FAILURE);
     }
+
+    int bytes_leidos;
+    while ((bytes_leidos = recv(new_socket, buffer,1024, 0)) > 0) {
+        printf("[CLIENTE]: %s", buffer);
+        memset(buffer, 0, 1024);
+    }
+
     // el servidor imprime
-    printf("soy el servidor\n");
+    printf("Cliente se desconector\n");
 
     close(new_socket);
     close(server_fd);
