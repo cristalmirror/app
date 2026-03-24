@@ -42,12 +42,12 @@ int main(int argc,char *argv[]) {
 
     int bytes_leidos;
     while ((bytes_leidos = recv(new_socket, buffer,1024, 0)) > 0) {
-        printf("[CLIENTE]: %s", buffer);
+        printf("[CLIENTE]: %s\n", buffer);
         memset(buffer, 0, 1024);
     }
 
     // el servidor imprime
-    printf("Cliente se desconector\n");
+    printf("[SERVIDOR]:Cliente se desconector\n");
 
     close(new_socket);
     close(server_fd);
