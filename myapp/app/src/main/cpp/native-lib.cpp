@@ -10,7 +10,8 @@ static int global_sock = -1;
 extern "C" JNIEXPORT jint JNICALL
 Java_com_example_myapp_MainActivity_connectNative(JNIEnv* env, jobject thiz, jstring ip, jint port) {
     if (global_sock != -1) {
-        return 0; // Ya conectado
+        close(global_sock);
+        global_sock = -1;
     }
 
     const char *ip_str = env->GetStringUTFChars(ip, 0);

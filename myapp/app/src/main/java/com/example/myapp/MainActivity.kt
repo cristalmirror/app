@@ -13,24 +13,33 @@ class MainActivity : AppCompatActivity() {
     private external fun sendNative(mensaje: String): Int
     private external fun disconnectNative()
 
+    private fun intentarConnect() {
+        Thread {
+            val resultado = connectNative("192.168.0.51", 1234)
+            runOnUiThread {
+                if (resultado == 0) {
+                    Toast.makeText(this, "Conectado al servidor", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Error de conexión: $resultado", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         val btnEnviar = findViewById<Button>(R.id.btnEnviar)
         val editText = findViewById<EditText>(R.id.editTextMensaje)
+        val btnRefrescar = findViewById<Button>(R.id.btnRefrescar)
+
+        btnRefrescar.setOnClickListener {
+            intentarConnect()
+        }
 
         // Conectar al servidor al iniciar la app
-        Thread {
-            val resultado = connectNative("192.168.0.245", 1234)
-            runOnUiThread {
-                if (resultado == 0) {
-                    Toast.makeText(this, "Conectado al servidor", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this, "Error de conexión inicial: $resultado", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }.start()
+        intentarConnect()
 
         btnEnviar.setOnClickListener {
             val texto = editText.text.toString()

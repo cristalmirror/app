@@ -7,6 +7,9 @@
 
 #define BUFFER_SIZE 1024
 int main(int argc,char *argv[]) {
+    int cont = 0; 
+reboot:
+    if (cont > 0 ) printf("[SERVIDOR]: Se reinicion el servidor para una nueva conexionc\n  Numero de Conexiones: [%i]\n",cont);
 
     int server_fd, new_socket, opt = 1;
     struct sockaddr_in address;
@@ -15,6 +18,11 @@ int main(int argc,char *argv[]) {
     //Create descriptor of sockets
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket fallido");
+        exit(EXIT_FAILURE);
+    }
+
+    if (setsockopt(server_fd,SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        perror("Error en setsocketopt");
         exit(EXIT_FAILURE);
     }
 
@@ -51,6 +59,7 @@ int main(int argc,char *argv[]) {
 
     close(new_socket);
     close(server_fd);
-
+    cont++;
+    goto reboot;
     return 0;
 }

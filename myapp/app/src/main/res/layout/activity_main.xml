@@ -1,31 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:gravity="center_horizontal">
+    android:padding="8dp">
 
     <TextView
+        android:id="@+id/txtStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Cliente Socket C++"
-        android:textSize="24sp"
-        android:layout_marginBottom="20dp" />
-
-    <EditText
-        android:id="@+id/editTextMensaje"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Escribí tu mensaje aquí..."
-        android:inputType="text" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:textSize="18sp" />
 
     <Button
-        android:id="@+id/btnEnviar"
+        android:id="@+id/btnRefrescar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refrescar"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="4dp"
+        android:backgroundTint="#FF9800"
+        android:textSize="12sp" />
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enviar al Servidor Debian"
-        android:layout_marginTop="10dp"
-        android:backgroundTint="#4CAF50" />
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:weightSum="100"
+        android:background="#000000"
+        android:paddingTop="4dp">
 
-</LinearLayout>
+        <EditText
+            android:id="@+id/editTextMensaje"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="75"
+            android:hint="Escribí tu mensaje..."
+            android:inputType="text"
+            android:padding="12dp"
+            android:maxLines="2"
+            android:layout_marginEnd="4dp"
+            android:background="#000000"
+            android:textColor="#FFFFFF"
+            />
+
+        <Button
+            android:id="@+id/btnEnviar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="25"
+            android:text="Enviar"
+            android:textSize="12sp"
+            android:backgroundTint="#4CAF50"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+
+</RelativeLayout>
