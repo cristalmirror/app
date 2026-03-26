@@ -13,16 +13,43 @@
         android:layout_marginTop="10dp"
         android:textSize="18sp" />
 
-    <Button
-        android:id="@+id/btnRefrescar"
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtStatus"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnRefrescar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:backgroundTint="#FF9800"
+            android:text="Refrescar"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/btnFind"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#2196F3"
+            android:text="Find"
+            android:textSize="12sp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/txtFileSelected"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Refrescar"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="4dp"
-        android:backgroundTint="#FF9800"
-        android:textSize="12sp" />
+        android:layout_below="@id/layoutButtons"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:text="Ningún archivo seleccionado"
+        android:textSize="14sp" />
 
     <LinearLayout
         android:layout_width="match_parent"

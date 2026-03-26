@@ -5,14 +5,20 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <jni.h>
+#include <sstream>
 #include "Cipher.hpp"
 #include "colorString.hpp"
+
+// Forward declaration of the helper function defined in native-lib.cpp
+void updateUIStatus(JNIEnv* env, jobject thiz, const std::string& message);
+
 class AESDecipher {
 public:
     static const unsigned char inv_sbox[256];
-    AESDecipher(const std::vector<unsigned char> &key);
-    std::vector<unsigned char> decryptBlock(const std::vector<unsigned char> &block);
-    std::vector<std::vector<unsigned char>> generateRandomKey(const std::vector<unsigned char>& key);
+    AESDecipher(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &key);
+    std::vector<unsigned char> decryptBlock(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &block);
+    std::vector<std::vector<unsigned char>> generateRandomKey(JNIEnv* env, jobject thiz, const std::vector<unsigned char>& key);
 private:
     std::vector<std::vector<unsigned char>> keys;
     void invSubBytes(std::vector<unsigned char> &state);
@@ -47,31 +53,30 @@ static const unsigned char rcon[11] = {
     0x00,0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1B,0x36
 };
 
-AESDecipher::AESDecipher(const std::vector<unsigned char> &key) {
-    this->keys = generateRandomKey(key);
+inline AESDecipher::AESDecipher(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &key) {
+    this->keys = generateRandomKey(env, thiz, key);
 }
 
 
-inline std::vector<unsigned char> AESDecipher::decryptBlock(const std::vector<unsigned char> &block) {
+inline std::vector<unsigned char> AESDecipher::decryptBlock(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &block) {
     std::vector<unsigned char> state = block;
     int cont=10;
-    std::cout <<Color::NARANJA_NEGRO <<"[ROUND]: "<< Color::RESET;
+    updateUIStatus(env, thiz, "[ROUND]: ");
     addRoundKey(state, keys[10]);
     invShiftRows(state);
     invSubBytes(state);
-    std::cout <<Color::NARANJA << cont << " ";
+    updateUIStatus(env, thiz, "Round " + std::to_string(cont));
     cont--;
     for (int round = 9; round >= 1; round-- ) {
         addRoundKey(state, keys[round]);
         invMixColumns(state);
         invShiftRows(state);
         invSubBytes(state);        
-        std::cout << cont << " ";
+        updateUIStatus(env, thiz, "Round " + std::to_string(cont));
         cont--;
     }
     addRoundKey(state, keys[0]);
-    std::cout << cont << " ";
-    std::cout << Color::RESET <<std::endl;
+    updateUIStatus(env, thiz, "Round " + std::to_string(cont));
     return state;
 }
 
@@ -146,11 +151,11 @@ inline unsigned char AESDecipher::xtime(unsigned char x) {
     return (x << 1) ^ ((x & 0x80) ? 0x1b :0x00);
 }
 //random keys generation for rounds
-inline std::vector<std::vector<unsigned char>> AESDecipher::generateRandomKey(const std::vector<unsigned char>& key) {
+inline std::vector<std::vector<unsigned char>> AESDecipher::generateRandomKey(JNIEnv* env, jobject thiz, const std::vector<unsigned char>& key) {
 
     const int Nr = 10; //rounds
     
-    std::cout<< Color::VERDE <<"<<[ MAKING EXTENDED KEYS ]>>"<< Color::RESET <<std::endl;    
+    updateUIStatus(env, thiz, "<<[ MAKING EXTENDED KEYS ]>>");
     //expanded key
     std::vector<unsigned char> expanded(176);
     //copy all base keys in the first 4 words

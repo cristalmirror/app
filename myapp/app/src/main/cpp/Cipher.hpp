@@ -1,21 +1,28 @@
 #ifndef CIPHER_HPP
 #define CIPHER_HPP
-
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <random>
 #include <algorithm>
 #include <iomanip>
+#include <jni.h>
+#include <sstream>
 #include "colorString.hpp"
+
+// Forward declaration of the helper function defined in native-lib.cpp
+void updateUIStatus(JNIEnv* env, jobject thiz, const std::string& message);
+
 //Cipher class
 class AESCipher {
 public:
     static const unsigned char sbox[256];
     //constructor
-    AESCipher(const std::vector<unsigned char> &key);
+    AESCipher(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &key);
     //runing the parts of AES algoritm
-    std::vector<unsigned char> encryptBlock(const std::vector<unsigned char> &block);
+    std::vector<unsigned char> encryptBlock(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &block);
     //make keys
-    std::vector<std::vector<unsigned char>> generateRandomKey(const std::vector<unsigned char> &key);
+    std::vector<std::vector<unsigned char>> generateRandomKey(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &key);
     
 private:
 
@@ -66,22 +73,22 @@ const unsigned char AESCipher::sbox[256] = {
         0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68,
         0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
-inline AESCipher::AESCipher(const std::vector<unsigned char> &key) {
-    this->keys = generateRandomKey(key);
+inline AESCipher::AESCipher(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &key) {
+    this->keys = generateRandomKey(env, thiz, key);
 }
 
  //runing the parts of AES algoritm
-inline std::vector<unsigned char> AESCipher::encryptBlock(const std::vector<unsigned char> &block) {
+inline std::vector<unsigned char> AESCipher::encryptBlock(JNIEnv* env, jobject thiz, const std::vector<unsigned char> &block) {
     std::vector<unsigned char> state = block;
     int cont=0;
-    std::cout <<Color::NARANJA_NEGRO <<"[ROUND]: " << Color::RESET;
+    updateUIStatus(env, thiz, "[ROUND]: ");
     addRoundKey(state,keys[0]); //initial round
     for (int round = 1; round <= 9; round++) {
         subBytes(state);
         shiftRows(state);
         mixColumns(state);
         addRoundKey(state, keys[round]);//expanded key for round
-        std::cout<<Color::NARANJA<< cont << " ";
+        updateUIStatus(env, thiz, "Round " + std::to_string(cont));
         cont++;
     }
 
@@ -89,8 +96,7 @@ inline std::vector<unsigned char> AESCipher::encryptBlock(const std::vector<unsi
     subBytes(state);
     shiftRows(state);
     addRoundKey(state, keys[10]);
-    std::cout << cont << " ";
-    std::cout << Color::RESET <<std::endl;
+    updateUIStatus(env, thiz, "Round " + std::to_string(cont));
     return state;
 }
 
@@ -155,10 +161,10 @@ inline void AESCipher::addRoundKey(std::vector<unsigned char>& state,const std::
     }
 }
 //random keys generation for rounds
-inline std::vector<std::vector<unsigned char>> AESCipher::generateRandomKey(const std::vector<unsigned char>& key) {
+inline std::vector<std::vector<unsigned char>> AESCipher::generateRandomKey(JNIEnv* env, jobject thiz, const std::vector<unsigned char>& key) {
     const int Nr = 10; //rounds
     
-    std::cout << Color::VERDE <<"<<[ MAKING EXTENDED KEYS ]>>"<< Color::RESET <<std::endl;    
+    updateUIStatus(env, thiz, "<<[ MAKING EXTENDED KEYS ]>>");
     //expanded key to 44 words(4 bytes each)
     std::vector<unsigned char> expanded(176);
     
@@ -201,7 +207,7 @@ inline std::vector<std::vector<unsigned char>> AESCipher::generateRandomKey(cons
     return finalKeys; 
 }
 //base key necesary to init the encryptation
-inline std::vector<unsigned char> generateSaveKeyBase(const std::string &filename) {
+inline std::vector<unsigned char> generateSaveKeyBase(JNIEnv* env, jobject thiz, const std::string &filename) {
     std::vector<unsigned char> randomKey(16);
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -210,20 +216,23 @@ inline std::vector<unsigned char> generateSaveKeyBase(const std::string &filenam
     for (auto &byte : randomKey) {
         byte = static_cast<unsigned char>(dis(gen));
     }
-    std::cout << Color::AMARILLO <<"*** base key has generated ***"<< Color::RESET <<std::endl;
+    updateUIStatus(env, thiz, "*** base key has generated ***");
     //generation file of key base
 
+    std::stringstream ss;
     for (unsigned char byte : randomKey) {
-        std::cout << Color::CIAN << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << Color::RESET <<" ";
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
     }
+    updateUIStatus(env, thiz, ss.str());
+
     std::ofstream outFile(filename, std::ios::binary);
     if (!outFile) {
-        std::cerr<< Color::ROJO <<"Error writing key to file"<< Color::RESET <<std::endl;
+        updateUIStatus(env, thiz, "Error writing key to file");
         return {};
     } else {
         outFile.write(reinterpret_cast<const char*>(randomKey.data()),randomKey.size());
         outFile.close();
-        std::cout<< Color::VERDE <<"-> [base key has writed]"<< Color::RESET <<std::endl;
+        updateUIStatus(env, thiz, "-> [base key has writed]");
         return randomKey;
     }
 }
